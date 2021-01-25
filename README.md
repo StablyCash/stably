@@ -19,8 +19,8 @@ Stably Cash is a new paradigm in stablecoin design. It brings together familiar 
 **Swap-based Monetary Policy** – Stably Cash uses principles from automated market makers like Uniswap to create swap-based price discovery and real-time stabilization incentives through arbitrage.
 
 
-Website: https://stably.cash/
-Twitter: https://twitter.com/Stably_Cash
-Telegram: https://t.me/stably_cash
-Medium: https://stablycash.medium.com/
+- Website: https://stably.cash/
+- Twitter: https://twitter.com/Stably_Cash
+- Telegram: https://t.me/stably_cash
+- Medium: https://stablycash.medium.com/
 
