@@ -27,9 +27,12 @@ contract StakingRewards is IStakingRewards, RewardsDistributionRecipient, Reentr
 
     ERC20 public rewardsToken;
     ERC20 public stakingToken;
+    ERC20 public STC;
     uint256 public periodFinish;
     uint256 public starttime = 1643292000;
-
+    uint256 public rate;
+    uint256 public dailyLimit;
+    uint256 public lastUpdateTvlTime;
     // Constants for various precisions
     uint256 private constant PRICE_PRECISION = 1e6;
 
@@ -61,7 +64,7 @@ contract StakingRewards is IStakingRewards, RewardsDistributionRecipient, Reentr
     mapping(address => uint256) private _boosted_balances;
 
     mapping(address => LockedStake[]) private lockedStakes;
-    mapping (address => uint256) public userClaimed;
+    mapping (address => uint256) public claimed;
     mapping(address => bool) public greylist;
 
     bool public unlockedStakes; // Release lock stakes in case of system migration
@@ -82,15 +85,22 @@ contract StakingRewards is IStakingRewards, RewardsDistributionRecipient, Reentr
         address _rewardsToken,
         address _stakingToken,
         address _timelock_address,
-        uint256 _starttime
+        address _STC,
+        uint256 _starttime,
+        uint256 _rate,
+        uint256 _dailyLimit
     ) public Owned(_owner){
         owner_address = _owner;
         starttime = _starttime;
         rewardsToken = ERC20(_rewardsToken);
         stakingToken = ERC20(_stakingToken);
+        STC = ERC20(_STC);
         rewardsDistribution = _rewardsDistribution;
         lastUpdateTime = block.timestamp;
         timelock_address = _timelock_address;
+        rate = _rate;
+        dailyLimit = _dailyLimit;
+        lastUpdateTvlTime = _starttime;
         // rewardRate = 380517503805175038; // (uint256(12000000e18)).div(365 * 86400); // Base emission rate of 12M STS over the first year
         // rewardRate = rewardRate.mul(pool_weight).div(1e6);
         unlockedStakes = false;
@@ -297,13 +307,13 @@ contract StakingRewards is IStakingRewards, RewardsDistributionRecipient, Reentr
         if (reward > 0) {
             rewards[msg.sender] = 0;
             rewardsToken.transfer(msg.sender, reward);
-             userClaimed[msg.sender] = userClaimed[msg.sender].add(reward);
+             claimed[msg.sender] = claimed[msg.sender].add(reward);
             emit RewardPaid(msg.sender, reward);
         }
     }
     
-     function getUserClaimed(address _address) public view returns(uint256 userTotalClaimed) {
-       userTotalClaimed = userClaimed[_address];
+     function getClaimed(address _address) public view returns(uint256) {
+       return claimed[_address];
     }
 /*
     function exit() external override {
@@ -342,7 +352,9 @@ contract StakingRewards is IStakingRewards, RewardsDistributionRecipient, Reentr
         emit RewardsPeriodRenewed(address(stakingToken));
     }
 
-    function notifyRewardAmount(uint256 reward,uint256 _duration) public onlyByOwnerOrGovernance  {
+    function notifyRewardAmount() public  {
+        uint256 _duration = block.timestamp.sub(lastUpdateTvlTime);
+        uint256 reward = getAvgTVL(_duration);
         rewardPerTokenStored = rewardPerToken();
         lastUpdateTime = lastTimeRewardApplicable();
         if (block.timestamp >= periodFinish) {
@@ -354,7 +366,19 @@ contract StakingRewards is IStakingRewards, RewardsDistributionRecipient, Reentr
         }
         lastUpdateTime = block.timestamp;
         periodFinish = block.timestamp.add(_duration);
+        lastUpdateTvlTime = block.timestamp;
         emit RewardAdded(reward);
+    }
+    
+   function setRate(uint256 _rate) public onlyByOwnerOrGovernance  {
+       rate = _rate;
+    }
+    
+    function getAvgTVL(uint256 _duration) public view returns(uint256) {
+       uint256 durationLimit = dailyLimit.div(1 days).mul(_duration);
+       uint256 totalLPSupply = stakingToken.totalSupply();
+       uint256 reward = STC.balanceOf(address(stakingToken)).mul(2).mul(rate).div(PRICE_PRECISION).div(1 days).mul(_duration).mul(_staking_token_supply).div(totalLPSupply);
+       return Math.min(durationLimit, reward);
     }
     
 
