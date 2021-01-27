@@ -8,7 +8,7 @@ Stably Cash is one of the first fractional-algorithmic stablecoin protocols. Sta
 
 Stably Cash is a new paradigm in stablecoin design. It brings together familiar concepts into a never before seen protocol:
 
-**Fractional-Algorithmic** – Stably Cash is the first and only stablecoin with parts of its supply backed by collateral and parts of the supply algorithmic. The ratio of collateralized and algorithmic depends on the market's pricing of the STC stablecoin. If STC is trading at above $1, the protocol decreases the collateral ratio. If STC is trading at under $1, the protocol increases the collateral ratio. 
+**Fractional-Algorithmic** – Stably Cash is one of the first stablecoins with parts of its supply backed by collateral and parts of the supply algorithmic. The ratio of collateralized and algorithmic depends on the market's pricing of the STC stablecoin. If STC is trading at above $1, the protocol decreases the collateral ratio. If STC is trading at under $1, the protocol increases the collateral ratio. 
 
 **Decentralized & Governance**-minimized – Community governed and emphasizing a highly autonomous, algorithmic approach with no active management. 
 
